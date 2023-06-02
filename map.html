@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>rotate</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+        }
+
+        .flex-container {
+            display: flex;
+            flex-wrap: nowrap;
+            height: 50dvh;
+        }
+
+        .child img {
+            object-fit: cover;
+            width: 50vh;
+            height: 50vh;
+        }
+
+        .spacer {
+            display: block;
+            object-fit: contain;
+            flex: 1 1;
+            height: auto;
+            box-sizing: border-box;
+
+ 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .child {
+            position: relative;
+            display: block;
+            object-fit: contain;
+            flex: 1 0;
+            height: auto;
+            box-sizing: border-box;
+
+ 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .child>table {
+            margin: 0 auto;
+        }
+
+        .forward {
+            background-color: #90ca92;
+        }
+
+        .backward {
+            background-color: #c98080;
+        }
+
+        .label {
+            background-color: white;
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            font-size: large;
+            z-index: 1;
+        }
+    </style>
+    <script>
+        var quick = [0,0,0,0];
+        var flip = [false, false, false, false];
+        var rot = [0, 0, 0, 0];
+        function imgWindow(i, that) {
+            var e = document.getElementById("img" + i);
+            var label = document.getElementById("label" + i);
+
+            quick[i]++;
+            if(quick[i] > 7) quick[i] = 0;
+            flip[i] = quick[i] > 3;
+            rot[i] = quick[i] > 3 ? quick[i] - 4 : quick[i];
+
+                if (flip[i]) {
+                    e.style.transform = "rotate(" + (rot[i] - 2) * 90 + "deg) scaleX(-1)";
+                    label.innerHTML = "Square"+(i+1) +" " +rot[i]*90+"deg : flipped";
+                    //e.style.border = "red 1px solid";
+
+                } else {
+                    e.style.transform = "rotate(" + rot[i] * 90 + "deg)";
+                    label.innerHTML = "Square"+(i+1) +" " +rot[i]*90+"deg";
+                    //e.style.border = "black 1px solid";
+                }
+        }
+    </script>
+</head>
+
+<body>
+    <div class="flex-container">
+        <div class="spacer"></div>
+        <div class="child"><img id="img0" class="4" onclick="imgWindow(0, this)" src="1.jpg"/>
+        <div class="label" id="label0"></div>
+        </div>
+        <div class="child"><img id="img1" class="3" onclick="imgWindow(1, this)" src="2.jpg"/>
+        <div class="label" id="label1"></div>
+        </div>
+        <div class="spacer"></div>
+        </div><div class="flex-container">
+        <div class="spacer"></div>
+        <div class="child"><img id="img2" class="2" onclick="imgWindow(2, this)" src="3.jpg"/>
+        <div class="label" id="label2"></div>
+        </div>
+        <div class="child"><img id="img3" class="1" onclick="imgWindow(3, this)" src="4.jpg"/>
+        <div class="label" id="label3"></div>
+        </div>
+        <div class="spacer"></div>
+    </div>
+</body>
+
+</html>
