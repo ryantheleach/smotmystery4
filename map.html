@@ -32,7 +32,7 @@
             height: auto;
             box-sizing: border-box;
 
- 
+
             display: flex;
             justify-content: center;
             align-items: center;
@@ -47,7 +47,7 @@
             height: auto;
             box-sizing: border-box;
 
- 
+
             display: flex;
             justify-content: center;
             align-items: center;
@@ -74,53 +74,105 @@
             font-size: large;
             z-index: 1;
         }
+
+        .label2 {
+            background-color: black;
+            color: white;
+            position: absolute;
+            top: 0;
+            left: 0;
+            font-size: large;
+            z-index: 1;
+            width: 30em;
+        }
+
+        .floating {
+            background-color: black;
+            color: white;
+            position: absolute;
+            top: 0;
+            left: 0;
+            font-size: large;
+        }
     </style>
     <script>
-        var quick = [0,0,0,0];
+        var quick = [0, 0, 0, 0];
         var flip = [false, false, false, false];
         var rot = [0, 0, 0, 0];
+        var superQuick = 0;
+        var superRot = 0;
+        var superFlip = false;
+
+        function superRotate() {
+            superQuick++;
+            superQuick = superQuick % 8;
+            superRot = superQuick % 4;
+            superFlip = superQuick > 3;
+
+            var e = document.getElementById("superRot");
+            var label = document.getElementById("superLabel");
+
+            if (superFlip) {
+                e.style.transform = "rotate(" + (superRot - 2) * 90 + "deg) scaleX(-1)";
+                label.innerHTML = "Master Rotate: " + superRot * 90 + "deg : flipped";
+            } else {
+                e.style.transform = "rotate(" + superRot * 90 + "deg)";
+                label.innerHTML = "Master Rotate: " + superRot * 90 + "deg";
+            }
+
+        }
+
         function imgWindow(i, that) {
             var e = document.getElementById("img" + i);
             var label = document.getElementById("label" + i);
 
             quick[i]++;
-            if(quick[i] > 7) quick[i] = 0;
+            if (quick[i] > 7) quick[i] = 0;
             flip[i] = quick[i] > 3;
             rot[i] = quick[i] > 3 ? quick[i] - 4 : quick[i];
 
-                if (flip[i]) {
-                    e.style.transform = "rotate(" + (rot[i] - 2) * 90 + "deg) scaleX(-1)";
-                    label.innerHTML = "Square"+(i+1) +" " +rot[i]*90+"deg : flipped";
-                    //e.style.border = "red 1px solid";
+            if (flip[i]) {
+                e.style.transform = "rotate(" + (rot[i] - 2) * 90 + "deg) scaleX(-1)";
+                label.innerHTML = "Square" + (i + 1) + " " + rot[i] * 90 + "deg : flipped";
+                //e.style.border = "red 1px solid";
 
-                } else {
-                    e.style.transform = "rotate(" + rot[i] * 90 + "deg)";
-                    label.innerHTML = "Square"+(i+1) +" " +rot[i]*90+"deg";
-                    //e.style.border = "black 1px solid";
-                }
+            } else {
+                e.style.transform = "rotate(" + rot[i] * 90 + "deg)";
+                label.innerHTML = "Square" + (i + 1) + " " + rot[i] * 90 + "deg";
+                //e.style.border = "black 1px solid";
+            }
         }
     </script>
 </head>
 
 <body>
-    <div class="flex-container">
-        <div class="spacer"></div>
-        <div class="child"><img id="img0" class="4" onclick="imgWindow(0, this)" src="1.jpg"/>
-        <div class="label" id="label0"></div>
+    <div class="floating">
+        <div class="label2"><button onclick="superRotate()">Super Rotate</button>
+            <div id="superLabel"></div>
         </div>
-        <div class="child"><img id="img1" class="3" onclick="imgWindow(1, this)" src="2.jpg"/>
-        <div class="label" id="label1"></div>
+    </div>
+    <div id="superRot">
+        <div class="flex-container">
+            <div class="spacer">
+            </div>
+            <div class="child"><img id="img0" class="4" onclick="imgWindow(0, this)" src="1.jpg" />
+                <div class="label" id="label0">Square 1 (as given)</div>
+            </div>
+            <div class="child"><img id="img1" class="3" onclick="imgWindow(1, this)" src="2.jpg" />
+                <div class="label" id="label1">Square 2 (as given)</div>
+            </div>
+            <div class="spacer"></div>
         </div>
-        <div class="spacer"></div>
-        </div><div class="flex-container">
-        <div class="spacer"></div>
-        <div class="child"><img id="img2" class="2" onclick="imgWindow(2, this)" src="3.jpg"/>
-        <div class="label" id="label2"></div>
+        <div class="flex-container">
+            <div class="spacer"></div>
+            <div class="child"><img id="img2" class="2" onclick="imgWindow(2, this)" src="3.jpg" />
+                <div class="label" id="label2">Square 3 (as given)</div>
+            </div>
+            <div class="child"><img id="img3" class="1" onclick="imgWindow(3, this)" src="4.jpg" />
+                <div class="label" id="label3">Square 4 (as given)</div>
+            </div>
+            <div class="spacer"></div>
         </div>
-        <div class="child"><img id="img3" class="1" onclick="imgWindow(3, this)" src="4.jpg"/>
-        <div class="label" id="label3"></div>
-        </div>
-        <div class="spacer"></div>
     </div>
 </body>
 
