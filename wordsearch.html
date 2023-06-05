@@ -1,0 +1,17 @@
+<html>
+    <head></head>
+    <script src="wordsearch.js"></script>
+    <script>function preview() {
+        var results = bruteforce();
+        var strResults = "";
+        for(const [k,v] of Object.entries(results)) {
+            var out = "\n\nPigpen Shape: " + k + "\n" + v;
+            strResults = strResults + out;
+        }
+        document.getElementById("preview").value = strResults.trimStart();
+    }</script>
+    <body>
+        <div><button onClick="preview()">BruteForce</button></div>
+        <div><textarea id="preview" rows="60" cols="300"></textarea></div>
+    </body>
+</html>
