@@ -1,18 +1,42 @@
 <html>
     <head></head>
-    <script>function preview() {
-        var letter = document.getElementById("letter").value;
-        var wordsearch = document.getElementById("wordsearch").value;
+    <script>
+        function onlyUnique(value, index, array) {
+            return array.indexOf(value) === index;
+        }
+
+    function formatLines(s) {
+        return s.toLowerCase().split('\n').map(l=>l.replace(/\s+/g, ' ').trim()).join("\n");
+    }
+
+    function linesToArray(s) {
+        return s.toLowerCase().replace(/\s+/g, " ").trim().split(" ");
+    }
+    
+    function preview() {
+        var letterIn = document.getElementById("letter").value;
+        var letter = formatLines(letterIn);
+        document.getElementById("letter").value = letter;
+        var wordsearchIn = document.getElementById("wordsearch").value;
+        var wordsearch = formatLines(wordsearchIn);
+        document.getElementById("wordsearch").value = wordsearch;
+
+
         var resultsE = document.getElementById("results");
 
-        letter = letter.replace("\n", " ");
-        var letters = letter.split(" ");
+        var letters = linesToArray(letterIn);
         var results = [];
+        var zeroResults = [];
+        letters = letters.filter(onlyUnique);
         letters.forEach((word) => {
             var matches = [...wordsearch.matchAll(word)];
-            results.push(word+": [lines: " + matches.map(m=>Math.floor(m.index/18+1)+":"+m.index%18).join(", ") +"]");
+            if(matches.length != 0) {
+                results.push(word+": [lines: " + matches.map(m=>Math.floor(m.index/18+1)+":"+m.index%18).join(", ") +"]");
+            } else {
+                zeroResults.push(word);
+            }
         });
-        resultsE.value = results.join("\n");
+        resultsE.value = results.join("\n") + "\n\nDid not find: "+ zeroResults.join(",");
 
     }</script>
     <body>
