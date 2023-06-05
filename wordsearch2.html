@@ -1,0 +1,28 @@
+<html>
+    <head></head>
+    <script>function preview() {
+        var letter = document.getElementById("letter").value;
+        var wordsearch = document.getElementById("wordsearch").value;
+        var resultsE = document.getElementById("results");
+
+        letter = letter.replace("\n", " ");
+        var letters = letter.split(" ");
+        var results = [];
+        letters.forEach((word) => {
+            var matches = [...wordsearch.matchAll(word)];
+            results.push(word+": [" + matches.map(m=>"row:"+ Math.floor(m.index/18) +" col:"+m.index%18+1).join(", ") +"]");
+        });
+        resultsE.value = results.join("\n");
+
+    }</script>
+    <body>
+        <div><button onClick="preview()">BruteForce</button></div>
+        <div>letter<textarea id="letter" rows="10" cols="100">test, words and stuff
+more words and stuff</textarea></div>
+        <div>wordsearch<textarea id="wordsearch" rows="10" cols="100">wordsandstuff
+alotofwordsan
+dstuffgoesher
+andwordsforda</textarea></div>
+        <div>results<textarea id="results" rows="30" cols="100"></textarea></div>
+    </body>
+</html>
