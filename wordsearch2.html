@@ -10,19 +10,40 @@
         var results = [];
         letters.forEach((word) => {
             var matches = [...wordsearch.matchAll(word)];
-            results.push(word+": [" + matches.map(m=>"row:"+ Math.floor(m.index/18) +" col:"+m.index%18+1).join(", ") +"]");
+            results.push(word+": [lines: " + matches.map(m=>Math.floor(m.index/18+1)+":"+m.index%18).join(", ") +"]");
         });
         resultsE.value = results.join("\n");
 
     }</script>
     <body>
         <div><button onClick="preview()">BruteForce</button></div>
-        <div>letter<textarea id="letter" rows="10" cols="100">test, words and stuff
-more words and stuff</textarea></div>
-        <div>wordsearch<textarea id="wordsearch" rows="10" cols="100">wordsandstuff
-alotofwordsan
-dstuffgoesher
-andwordsforda</textarea></div>
+        <div>letter<textarea id="letter" rows="10" cols="100">this deadbeat ruins roles
+captured pages inside a broben trade
+vengeance for example never looks back
+a prying snoop who sounds life a winner
+a choiced in attributes leads to those who betray
+a rising fuy is what youll find in the stranger's heart
+between 5 and 500 executions begin to fed bitter and exasperated
+a hex concealed inside incurs envy and greed in gold hoarders
+a livid rage created  by written promises of hide perhaps this excruciating torment sounds like a fire starter</textarea></div>
+        <div>wordsearch<textarea id="wordsearch" rows="10" cols="100">bewaretheacidrages
+scourventanxemploy
+afuryengagegloater
+spurgreedsdownfall
+basestjealousyfind
+tenthoughtsofabove
+allthemedindisgust
+timemakedeadcheats
+oustedrelicsoultra
+ixpostersofthedeep
+ruffiansmostlyadep
+lossurrickettyship
+haveyoulastedoutor
+sensedtoxicseasixs
+yeheartservingpart
+thoureadytaxedgold
+fortheyarehexapods
+androttenlyvicious</textarea></div>
         <div>results<textarea id="results" rows="30" cols="100"></textarea></div>
     </body>
 </html>
