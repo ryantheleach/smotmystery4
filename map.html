@@ -177,7 +177,7 @@
             
         }
 
-        function imgWindow(i, that) {
+        function imgWindow(i) {
             var e = document.getElementById("img" + i);
             var label = document.getElementById("label" + i);
 
@@ -186,6 +186,12 @@
             flip[i] = quick[i] > 3;
             rot[i] = quick[i] > 3 ? quick[i] - 4 : quick[i];
 
+            update(i);
+        }
+
+        function update(i) {
+            var e = document.getElementById("img" + i);
+            var label = document.getElementById("label" + i);
             if (flip[i]) {
                 e.style.transform = "rotate(" + (rot[i] - 2) * 90 + "deg) scaleX(-1)";
                 label.innerHTML = "Square" + (i + 1) + " " + rot[i] * 90 + "deg : flipped";
@@ -197,12 +203,20 @@
                 //e.style.border = "black 1px solid";
             }
         }
+
+        function solve() {
+            quick = rot = [2, 0, 3, 2];
+            flip = [false,false,false,false];
+            [0,1,2,3].forEach(update);
+        }
     </script>
 </head>
 
 <body>
     <div class="floating">
-        <div class="label2"><button onclick="superRotate()">Super Rotate</button>
+        <div class="label2">
+            <button onclick="superRotate()">Super Rotate</button>
+            <button onclick="solve()">Solve Map</button>
             <div id="superLabel">Master Rotate: 0deg (As given, 1,2 3,4 from the twitter Bio's)</div>
         </div>
     </div>
