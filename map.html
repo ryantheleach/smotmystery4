@@ -11,51 +11,86 @@
         body {
             padding: 0;
             margin: 0;
-        }
-
-        .flex-container {
             display: flex;
-            flex-wrap: nowrap;
-            height: 50dvh;
+            justify-content: center;
+            background-color: #333;
         }
 
-        .child img {
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr min(45vh, 45vw) min(45vh, 45vw) 1fr;
+            grid-template-rows: min(5vh, 5vw) min(45vh, 45vw) min(45vh, 45vw) min(5vh, 5vw);
+            width: 100%;
+        }
+
+        .toolbar {
+            grid-area: 1 / 2 / 1 / 4;
+        }
+
+        .footer {
+            grid-area: 4 / 2 / 4 / 4;
+            background: linear-gradient(#00d2ff 20%, #ffa6b9 0 40%, white 0 60%, #ffa6b9 0 80%, #00d2ff 0);
+            display: flex;
+            align-items: center;
+            text-align: center;
+            width: 100%;
+        }
+
+        .footer>span {
+            align-items: center;
+            width: 100%;
+        }
+
+        #labelstack {
+            grid-area: 2 / 2 / 4 / 4;
+            display: grid;
+            grid-template-columns: 50% 50%;
+            grid-template-rows: 50% 50%;
+            opacity: 50%;
+            pointer-events: none;
+        }
+
+        #superRot {
+            grid-area: 2 / 2 / 4 / 4;
+            display: grid;
+            grid-template-columns: 50% 50%;
+            grid-template-rows: 50% 50%;
+        }
+
+        .gridchilda {
+            position: relative;
+            grid-area: 1 / 1 / 2 / 2;
+        }
+
+        .gridchildb {
+            position: relative;
+            grid-area: 1 / 2 / 2 / 3;
+        }
+
+        .gridchildc {
+            position: relative;
+            grid-area: 2 / 1 / 3 / 2;
+        }
+
+        .gridchildd {
+            position: relative;
+            grid-area: 2 / 2 / 3 / 3;
+        }
+
+        img {
             object-fit: cover;
-            width: 50vh;
-            height: 50vh;
+            width: 100%;
+            height: 100%;
         }
 
         .spacer {
-            display: block;
-            object-fit: contain;
-            flex: 1 1;
-            height: auto;
-            box-sizing: border-box;
-
-
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
+            grid-area: 1 / 1 / 5 / 2;
+            background-color: #333;
         }
 
-        .child {
-            position: relative;
-            display: block;
-            object-fit: contain;
-            flex: 1 0;
-            height: auto;
-            box-sizing: border-box;
-
-
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-        }
-
-        .child>table {
-            margin: 0 auto;
+        .spacer2 {
+            grid-area: 1 / 4 / 5 / 5;
+            background-color: #333;
         }
 
         .forward {
@@ -78,20 +113,21 @@
         .label2 {
             background-color: black;
             color: white;
-            position: absolute;
+            position: relative;
             top: 0;
-            left: 0;
+            width: 100%;
+            height: min(5dvh, 5dvw);
             font-size: large;
             z-index: 1;
             width: 30em;
         }
 
         .floating {
-            background-color: black;
-            color: white;
+            background-color: #333;
             position: absolute;
+            width: min(90dvh, 90dvw);
             top: 0;
-            left: 0;
+            margin: auto;
             font-size: large;
         }
     </style>
@@ -120,6 +156,25 @@
                 label.innerHTML = "Master Rotate: " + superRot * 90 + "deg";
             }
 
+            const classes = ["gridchilda", "gridchildb", "gridchildd", "gridchildc"];
+            var rotClasses = rot => [...classes.slice(rot), ...classes.slice(0, rot)];
+            var getClasses = suffix => document.getElementById("label"+suffix).classList;
+            var setClasses = (suffix, classes) => document.getElementById("label"+suffix).classList = classes;
+
+            var newClasses = rotClasses(superRot);
+            if(!superFlip){
+                setClasses("A", newClasses[0]);
+                setClasses("B", newClasses[1]);
+                setClasses("D", newClasses[2]);
+                setClasses("C", newClasses[3]);
+            } else {
+                setClasses("C", newClasses[0]);
+                setClasses("D", newClasses[1]);
+                setClasses("B", newClasses[2]);
+                setClasses("A", newClasses[3]);
+            }
+
+            
         }
 
         function imgWindow(i, that) {
@@ -148,31 +203,26 @@
 <body>
     <div class="floating">
         <div class="label2"><button onclick="superRotate()">Super Rotate</button>
-            <div id="superLabel">Master Rotate: 0deg (As given, 1,2  3,4 from the twitter Bio's)</div>
+            <div id="superLabel">Master Rotate: 0deg (As given, 1,2 3,4 from the twitter Bio's)</div>
         </div>
     </div>
-    <div id="superRot">
-        <div class="flex-container">
-            <div class="spacer">
-            </div>
-            <div class="child"><img id="img0" class="4" onclick="imgWindow(0, this)" src="1.jpg" />
-                <div class="label" id="label0">Square 1 (as given)</div>
-            </div>
-            <div class="child"><img id="img1" class="3" onclick="imgWindow(1, this)" src="2.jpg" />
-                <div class="label" id="label1">Square 2 (as given)</div>
-            </div>
-            <div class="spacer"></div>
+    <div class="grid-container">
+        <div class="toolbar"></div>
+        <div class="spacer"></div>
+        <div id="superRot">
+            <div class="gridchilda"><img id="img0" class="4" onclick="imgWindow(0, this)" src="1.jpg" /></div>
+            <div class="gridchildb"><img id="img1" class="3" onclick="imgWindow(1, this)" src="2.jpg" /></div>
+            <div class="gridchildc"><img id="img2" class="2" onclick="imgWindow(2, this)" src="3.jpg" /></div>
+            <div class="gridchildd"><img id="img3" class="1" onclick="imgWindow(3, this)" src="4.jpg" /></div>
         </div>
-        <div class="flex-container">
-            <div class="spacer"></div>
-            <div class="child"><img id="img2" class="2" onclick="imgWindow(2, this)" src="3.jpg" />
-                <div class="label" id="label2">Square 3 (as given)</div>
-            </div>
-            <div class="child"><img id="img3" class="1" onclick="imgWindow(3, this)" src="4.jpg" />
-                <div class="label" id="label3">Square 4 (as given)</div>
-            </div>
-            <div class="spacer"></div>
+        <div id="labelstack">
+            <div id="labelA" class="gridchilda"><div class="label" id="label0">Square 1 (as given)</div></div>
+            <div id="labelB" class="gridchildb"><div class="label" id="label1">Square 2 (as given)</div></div>
+            <div id="labelC" class="gridchildc"><div class="label" id="label2">Square 3 (as given)</div></div>
+            <div id="labelD" class="gridchildd"><div class="label" id="label3">Square 4 (as given)</div></div>
         </div>
+        <div class="spacer2"></div>
+        <div class="footer"><span>Trans rights are human rights.</span></div>
     </div>
 </body>
 
