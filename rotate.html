@@ -1,0 +1,185 @@
+<html>
+    <style>
+                @font-face {
+            font-family: pigpen;
+            src: url(Pigpen_Cipher_Regular.otf);
+        }
+
+        .encoded {
+            font-family: pigpen;
+        }
+    </style>
+<script>
+
+    function createSquare2dArray(size) {
+        let outArray = new Array(size);
+        for (let i = 0; i < size; i++) {
+            outArray[i] = new Array(size);
+        }
+        return outArray;
+    }
+
+    function clone2dArray(src) {
+        return src.map(arr => arr.slice());
+    }
+
+    function stripNonUnique(key) {
+        var found = [];
+        var uniqueKey = key.split("").map(c => {
+            if (found.includes(c)) return "";
+            else {
+                found.push(c);
+                return c;
+            }
+        });
+        return uniqueKey;
+    }
+
+    function rotate(sourceArray) {
+        var destinationArray = createSquare2dArray(5);
+        var rowCount = sourceArray.length;
+        // Assume user isn't stupid, this is puzzle solving. Bold Assumption..
+        var colCount = sourceArray[0].length;
+
+        for (let c = 0; c < colCount; c++) {
+            for (let r = 0; r < rowCount; r++) {
+                let letter = sourceArray[rowCount - r - 1][c];
+                destinationArray[c][r] = letter;
+            }
+        }
+        return destinationArray;
+    }
+
+    function chunkSubstr(str, size) {
+        const numChunks = Math.ceil(str.length / size);
+        const chunks = new Array(numChunks);
+
+        for (let i = 0, o = 0; i < numChunks; ++i, o += size) {
+            chunks[i] = str.substr(o, size);
+        }
+
+        return chunks;
+    }
+
+    function rotateN(n, sourceArray) {
+        var result = sourceArray;
+        if (n == 0) return clone2dArray(result);
+        for (i = 0; i < n; i++) {
+            result = rotate(result);
+        }
+        return result;
+    }
+
+    function rotateArrPigpenN(n, sourceArray) {
+        if(n==0) return clone2dArray(sourceArray);
+        var result = sourceArray;
+        for(let i = 0; i < n; i++){
+             result = result.map(a=>a.map(c=>rotatePigPenN(n, c)));
+        }
+        return result;
+    }
+
+    function rotatePigPenN(n, char) {
+        if(n==0) return char;
+        const clear = "abcdefghijklmnopqrstuvwxyz".toUpperCase();
+        const coded = "cfibehadglorknqjmpusvtywzx".toUpperCase();
+        var index;
+        for(i=0; i<n; i++) {
+            index = clear.indexOf(char);
+            out = coded.charAt(index);
+            char = out;
+        }
+        return out;
+    }
+
+    function textToArray(text) {
+        var sourceArray = chunkSubstr(text, 5);
+        return sourceArray.map(x => x.split(""));
+    }
+
+    function rotateElementN(n, keyId, resultId, copyId) {
+        var key = document.getElementById(keyId).value.toUpperCase();
+        var sourceArray = textToArray(key);
+        var outlines = rotateN(n, sourceArray);
+        outlines = rotateArrPigpenN(n, outlines);
+        var result = outlines[0].join("") + "\n" + outlines[1].join("") + "\n" + outlines[2].join("") + "\n" + outlines[3].join("") + "\n" + outlines[4].join("");
+        var result2 = outlines[0].join("") + outlines[1].join("") + outlines[2].join("") + outlines[3].join("") + outlines[4].join("");
+        document.getElementById(resultId).value = result;
+        document.getElementById(copyId).value = result2;
+    }
+
+
+
+    function keyPrep(prefix) {
+        var key = document.getElementById(prefix + "Key").value.toUpperCase();
+        var defaultAlphabet = document.getElementById("defaultAlphabet").value.toUpperCase();
+
+        var combined = key + defaultAlphabet;
+        var uniqueKey = stripNonUnique(combined);
+        
+        document.getElementById(prefix + "Key2").value = uniqueKey.join("");
+    }
+
+    function go(prefix) {
+        keyPrep(prefix);
+        rotateElementN(0, prefix + "Key2", prefix + "result0", prefix + "copyResult0");
+        rotateElementN(1, prefix + "Key2", prefix + "result1", prefix + "copyResult1");
+        rotateElementN(2, prefix + "Key2", prefix + "result2", prefix + "copyResult2");
+        rotateElementN(3, prefix + "Key2", prefix + "result3", prefix + "copyResult3");
+        return false;
+    }
+</script>
+<div style="background-color: rosybrown;">
+    <label for="defaultAlphabet">Default Alphabet (no j?)</label><input type="text" size="30" name="defaultAlphabet"
+        id="defaultAlphabet" value="abcdefghiklmnopqrstuvwxyz">
+</div>
+<div style="background-color: palegoldenrod;">
+    <div><label for="Akey">key Input</label><input type="text" size="30" name="AKey" id="AKey" value="outcast"></div>
+    <div><label for="Akey2">key unique</label><input type="text" size="30" name="AKey2" id="AKey2"></div>
+    <textarea name="Aresult0" id="Aresult0" rows="5" cols="6" class="encoded"></textarea>
+    <textarea name="Aresult1" id="Aresult1" rows="5" cols="6" class="encoded"></textarea>
+    <textarea name="Aresult2" id="Aresult2" rows="5" cols="6" class="encoded"></textarea>
+    <textarea name="Aresult3" id="Aresult3" rows="5" cols="6" class="encoded"></textarea>
+    <div><input size="5" name="AcopyResult0" id="AcopyResult0"><input size="5" name="AcopyResult1"
+            id="AcopyResult1"><input size="5" name="AcopyResult2" id="AcopyResult2"><input size="5" name="AcopyResult3"
+            id="AcopyResult3"></div>
+    <button onclick="go('A')">generate</button>
+</div>
+<div style="background-color: aquamarine;">
+    <div><label for="Bkey">key Input</label><input type="text" size="30" name="BKey" id="BKey" value="twofaced"></div>
+    <div><label for="Bkey2">key unique</label><input type="text" size="30" name="BKey2" id="BKey2"></div>
+    <textarea name="Bresult0" id="Bresult0" rows="5" cols="6"></textarea>
+    <textarea name="Bresult1" id="Bresult1" rows="5" cols="6"></textarea>
+    <textarea name="Bresult2" id="Bresult2" rows="5" cols="6"></textarea>
+    <textarea name="Bresult3" id="Bresult3" rows="5" cols="6"></textarea>
+    <div><input size="5" name="BcopyResult0" id="BcopyResult0"><input size="5" name="BcopyResult1"
+            id="BcopyResult1"><input size="5" name="BcopyResult2" id="BcopyResult2"><input size="5" name="BcopyResult3"
+            id="BcopyResult3"></div>
+    <button onclick="go('B')">generate</button>
+</div>
+<div style="background-color: darkgray;">
+    <div><label for="Ckey">key Input</label><input type="text" size="30" name="CKey" id="CKey" value="grudge"></div>
+    <div><label for="Ckey2">key unique</label><input type="text" size="30" name="CKey2" id="CKey2"></div>
+    <textarea name="Cresult0" id="Cresult0" rows="5" cols="6"></textarea>
+    <textarea name="Cresult1" id="Cresult1" rows="5" cols="6"></textarea>
+    <textarea name="Cresult2" id="Cresult2" rows="5" cols="6"></textarea>
+    <textarea name="Cresult3" id="Cresult3" rows="5" cols="6"></textarea>
+    <div><input size="5" name="CcopyResult0" id="CcopyResult0"><input size="5" name="CcopyResult1"
+            id="CcopyResult1"><input size="5" name="CcopyResult2" id="CcopyResult2"><input size="5" name="CcopyResult3"
+            id="CcopyResult3"></div>
+    <button onclick="go('C')">generate</button>
+</div>
+<div style="background-color: violet;">
+    <div><label for="Dkey">key Input</label><input type="text" size="30" name="DKey" id="DKey" value=""></div>
+    <div><label for="Dkey2">key unique</label><input type="text" size="30" name="DKey2" id="DKey2"></div>
+    <textarea name="Dresult0" id="Dresult0" rows="5" cols="6"></textarea>
+    <textarea name="Dresult1" id="Dresult1" rows="5" cols="6"></textarea>
+    <textarea name="Dresult2" id="Dresult2" rows="5" cols="6"></textarea>
+    <textarea name="Dresult3" id="Dresult3" rows="5" cols="6"></textarea>
+    <div><input size="5" name="DcopyResult0" id="DcopyResult0"><input size="5" name="DcopyResult1"
+            id="DcopyResult1"><input size="5" name="DcopyResult2" id="DcopyResult2"><input size="5" name="DcopyResult3"
+            id="DcopyResult3"></div>
+    <button onclick="go('D')">generate</button>
+</div>
+
+</html>
