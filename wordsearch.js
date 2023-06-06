@@ -22,7 +22,7 @@ var pigpenA = {
 var pigpenS = {
     "s" : [[0,0], [1,1], [2,2], [1,3], [0,4]],
     "t" : [[0,0], [1,1], [2,2], [3,1], [4,0]],
-    "u" : [[0,2], [1,1], [2,0], [3,1], [3,2]],
+    "u" : [[0,2], [1,1], [2,0], [3,1], [4,2]],
     "v" : [[2,0], [1,1], [0,2], [1,3], [2,4]]
 };
 
@@ -90,9 +90,11 @@ function bruteforce() {
     // foreach pigpen shape
     var answers = {};
     var sanity = 0;
+    var results = {};
     for(const [k,v] of Object.entries(pigPen)) {
         var bounding = bounds[k];
         var section = "";
+        results[k] = [];
         for(r = bounding[0][0]; r < wordsearch.length - bounding[1][0]; r++) {
             for(c = bounding[0][1]; c < wordsearch[r].length - bounding[1][1]; c++) {
                 // for each top left position of each pigpen shape.
@@ -105,10 +107,11 @@ function bruteforce() {
                 }
                     var line = r + ":" + c + "["+ alternatives.join(", ")+"] \n";
                     section = section + line;
+                    results[k].push({"r":r, "c":c, "words":alternatives});
             }
             section = section + "\n"
         }
         answers[k] = section;
     }
-    return answers;
+    return [answers, results];
 }
