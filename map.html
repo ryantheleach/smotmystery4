@@ -8,6 +8,16 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
+        #ImageDownload {
+            width: min(100vh, 100vw);
+            height: min(100vh, 100vw);
+            z-index: 5;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: none;
+        }
+
         body {
             padding: 0;
             margin: 0;
@@ -158,11 +168,11 @@
 
             const classes = ["gridchilda", "gridchildb", "gridchildd", "gridchildc"];
             var rotClasses = rot => [...classes.slice(rot), ...classes.slice(0, rot)];
-            var getClasses = suffix => document.getElementById("label"+suffix).classList;
-            var setClasses = (suffix, classes) => document.getElementById("label"+suffix).classList = classes;
+            var getClasses = suffix => document.getElementById("label" + suffix).classList;
+            var setClasses = (suffix, classes) => document.getElementById("label" + suffix).classList = classes;
 
             var newClasses = rotClasses(superRot);
-            if(!superFlip){
+            if (!superFlip) {
                 setClasses("A", newClasses[0]);
                 setClasses("B", newClasses[1]);
                 setClasses("D", newClasses[2]);
@@ -174,7 +184,7 @@
                 setClasses("A", newClasses[3]);
             }
 
-            
+
         }
 
         function imgWindow(i) {
@@ -206,8 +216,64 @@
 
         function solve() {
             quick = rot = [2, 0, 3, 2];
-            flip = [false,false,false,false];
-            [0,1,2,3].forEach(update);
+            flip = [false, false, false, false];
+            [0, 1, 2, 3].forEach(update);
+        }
+
+        function download() {
+            var canvas = document.getElementById("ImageDownload");
+            if (canvas == null) {
+                canvas = document.createElement('canvas');
+                canvas.id = "ImageDownload";
+                canvas.width = 1080 * 2;
+                canvas.height = 1080 * 2;
+                canvas.style.border = "red solid 1px";
+
+                // canvas.style.display = "none";
+                var body = document.getElementsByTagName("body")[0];
+                body.appendChild(canvas);
+            }
+            var ctx = canvas.getContext("2d");
+            var ninety = Math.PI / 2;
+
+            function drawRotatedImage(image, x, y, angle, flip) {
+                ctx.save()
+                ctx.translate(x + image.naturalWidth / 2, y + image.naturalHeight / 2);
+                 if (flip) {
+                     ctx.rotate(angle -(2*ninety));
+                     ctx.scale(-1, 1);
+                 } else {
+                    ctx.rotate(angle);
+                 }
+
+                ctx.translate(-(x + image.naturalWidth / 2), -(y + image.naturalHeight / 2));
+                ctx.drawImage(image, x, y);
+                ctx.restore();
+            }
+
+            var img0 = document.getElementById("img0");
+            var img1 = document.getElementById("img1");
+            var img2 = document.getElementById("img2");
+            var img3 = document.getElementById("img3");
+
+            ctx.save();
+            ctx.translate(1080, 1080);
+            if (superFlip) {
+                ctx.rotate((superRot - 2) * ninety);
+                ctx.scale(-1, 1);
+            } else {
+                ctx.rotate(superRot * ninety);
+            }
+
+            ctx.translate(-1080, -1080);
+            drawRotatedImage(img0, 0, 0, ninety * rot[0], flip[0]);
+            drawRotatedImage(img1, 1080, 0, ninety * rot[1], flip[1]);
+            drawRotatedImage(img2, 0, 1080, ninety * rot[2], flip[2]);
+            drawRotatedImage(img3, 1080, 1080, ninety * rot[3], flip[3]);
+            ctx.restore();
+
+            var dlImage = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");  // here is the most important part because if you dont replace you will get a DOM 18 exception.
+            window.location.href=dlImage;
         }
     </script>
 </head>
@@ -217,6 +283,7 @@
         <div class="label2">
             <button onclick="superRotate()">Super Rotate</button>
             <button onclick="solve()">Solve Map</button>
+            <button onclick="download()">Download</button>
             <div id="superLabel">Master Rotate: 0deg (As given, 1,2 3,4 from the twitter Bio's)</div>
         </div>
     </div>
@@ -230,10 +297,18 @@
             <div class="gridchildd"><img id="img3" class="1" onclick="imgWindow(3, this)" src="4.jpg" /></div>
         </div>
         <div id="labelstack">
-            <div id="labelA" class="gridchilda"><div class="label" id="label0">Square 1 (as given)</div></div>
-            <div id="labelB" class="gridchildb"><div class="label" id="label1">Square 2 (as given)</div></div>
-            <div id="labelC" class="gridchildc"><div class="label" id="label2">Square 3 (as given)</div></div>
-            <div id="labelD" class="gridchildd"><div class="label" id="label3">Square 4 (as given)</div></div>
+            <div id="labelA" class="gridchilda">
+                <div class="label" id="label0">Square 1 (as given)</div>
+            </div>
+            <div id="labelB" class="gridchildb">
+                <div class="label" id="label1">Square 2 (as given)</div>
+            </div>
+            <div id="labelC" class="gridchildc">
+                <div class="label" id="label2">Square 3 (as given)</div>
+            </div>
+            <div id="labelD" class="gridchildd">
+                <div class="label" id="label3">Square 4 (as given)</div>
+            </div>
         </div>
         <div class="spacer2"></div>
         <div class="footer"><span>Trans rights are human rights.</span></div>
