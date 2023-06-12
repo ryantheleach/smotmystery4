@@ -8,6 +8,15 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
+        @font-face {
+            font-family: pigpen;
+            src: url(Pigpen_Cipher_Regular.otf);
+        }
+
+        .encoded {
+            font-family: pigpen;
+        }
+
         #ImageDownload {
             width: min(100vh, 100vw);
             height: min(100vh, 100vw);
@@ -98,6 +107,12 @@
             background-color: #333;
         }
 
+        .spacer>div {
+            text-align: right;
+            /* background-color: black; */
+            color: white;
+        }
+
         .spacer2 {
             grid-area: 1 / 4 / 5 / 5;
             background-color: #333;
@@ -118,6 +133,10 @@
             right: 0;
             font-size: large;
             z-index: 1;
+        }
+
+        #linesDebug {
+            font-size: small;
         }
 
         .label2 {
@@ -154,7 +173,10 @@
             superQuick = superQuick % 8;
             superRot = superQuick % 4;
             superFlip = superQuick > 3;
+            superUpdate();
+        }
 
+        function superUpdate() {
             var e = document.getElementById("superRot");
             var label = document.getElementById("superLabel");
 
@@ -183,21 +205,39 @@
                 setClasses("B", newClasses[2]);
                 setClasses("A", newClasses[3]);
             }
-
-
+            writePigpen();
         }
 
-        function imgWindow(i) {
+        function imgWindow(i, t, rightClick) {
+            const times = (rightClick) ? 7 : 1;
+
             var e = document.getElementById("img" + i);
             var label = document.getElementById("label" + i);
 
-            quick[i]++;
-            if (quick[i] > 7) quick[i] = 0;
-            flip[i] = quick[i] > 3;
-            rot[i] = quick[i] > 3 ? quick[i] - 4 : quick[i];
-
+            for (let t = 0; t < times; t++) {
+                quick[i]++;
+                if (quick[i] > 7) quick[i] = 0;
+                flip[i] = quick[i] > 3;
+                rot[i] = quick[i] > 3 ? quick[i] - 4 : quick[i];
+            }
             update(i);
+            event.preventDefault();
         }
+
+        var saveData = (function () {
+            var a = document.createElement("a");
+            document.body.appendChild(a);
+            a.style = "display: none";
+            return function (data, fileName) {
+                var json = JSON.stringify(data),
+                    blob = new Blob([json], { type: "octet/stream" }),
+                    url = window.URL.createObjectURL(blob);
+                a.href = url;
+                a.download = fileName;
+                a.click();
+                window.URL.revokeObjectURL(url);
+            };
+        });
 
         function update(i) {
             var e = document.getElementById("img" + i);
@@ -212,6 +252,7 @@
                 label.innerHTML = "Square" + (i + 1) + " " + rot[i] * 90 + "deg";
                 //e.style.border = "black 1px solid";
             }
+            writePigpen();
         }
 
         function solve() {
@@ -220,11 +261,72 @@
             [0, 1, 2, 3].forEach(update);
         }
 
+        const squarePigPenLabels =
+            [
+                ["ggci", "iaga", "agcc", "icia", "icaa", "cgci", "iiga", "agcg"],
+                ["icaa", "cgci", "iiga", "agcg", "ggci", "iaga", "agcc", "icia"],
+                ["agcg", "icaa", "cgci", "iiga", "iaga", "agcc", "icia", "ggci"],
+                ["agcc", "icia", "ggci", "iaga", "iiga", "agcg", "icaa", "cgci"]];
+
+        // generates a pigpen string for an image.
+        // Square Order, left to right, top to bottom, before any rotations.
+        // sqOrder,globalState,sq1,sq2,sq3,sq4 pigpen
+        function pigpenString(superState, squareStates, adjustedSquareAssignment) {
+            var superRot = superState % 4;
+            var superFlip = superState > 3;
+            const toFromClockwise = (s) => [s[0], s[1], s[3], s[2]];
+            const toFromMirroredClockWise = (s) => [s[2], s[3], s[1], s[0]];
+            const adj = superState < 4 ? toFromClockwise : toFromMirroredClockWise;
+            const clockwiseSquares = adj(adjustedSquareAssignment);
+
+            var rotSquares = globalState => {
+                var globalRot = globalState % 4;
+                const index = 4 - globalRot;
+                return [...clockwiseSquares.slice(index), ...clockwiseSquares.slice(0, index)];
+            }
+            // This remains as toFromClockwise, as the order should be mirrored once, not twice.
+            var adjustedSquareAssignment = toFromClockwise(rotSquares(superRot));
+
+            // Restores the squares states as presented on screen, after accounting for global rotation and mirrors.
+            // This code is a horror show.
+            var squareToScreenState;
+            var mirrorAdjust = (!superFlip ? [0, 1, 2, 3] : [3, 2, 1, 0]);
+
+            if (!superFlip) {
+                squareToScreenState = (i) => !flip[i] ? ((squareStates[i] + superRot) % 4) : ((squareStates[i] + superRot) % 4) + 4;
+            } else {
+                squareToScreenState = (i) => !flip[i] ? (((4 - squareStates[i]) + superRot) % 4) + 4 : ((4 - (squareStates[i] % 4) + superRot) % 4);
+
+            }
+
+            var squareToPigpen = l => squarePigPenLabels[l][squareToScreenState(l)];
+
+            return adjustedSquareAssignment.map(l => ({ "sq": l + 1, state: squareStates[l], pp: squareToPigpen(l) }));
+        }
+
+        function writePigpen() {
+            var lines = pigpenString(superQuick, quick, [0, 1, 2, 3]);
+            lines.forEach((l, index) => {
+                document.getElementById(`line${index + 1}lbl`).innerText = "Square" + l.sq + ":" + l.state;
+                document.getElementById(`line${index + 1}pp`).innerText = l.pp;
+            });
+
+            const top = l => lines[l].pp.slice(0, 2);
+            const bot = l => lines[l].pp.slice(2);
+            const asMap =
+                `${top(0)}${top(1)}\n` +
+                `${bot(0)}${bot(1)}\n` +
+                `${top(2)}${top(3)}\n` +
+                `${bot(2)}${bot(3)}`;
+
+            document.getElementById(`linesDebug`).innerText = asMap;
+        }
+
         function download() {
             var canvas = document.getElementById("ImageDownload");
             if (canvas == null) {
                 canvas = document.createElement('canvas');
-                canvas.crossOrigin="anonymous";
+                canvas.crossOrigin = "anonymous";
                 canvas.id = "ImageDownload";
                 canvas.width = 1080 * 2;
                 canvas.height = 1080 * 2;
@@ -240,12 +342,12 @@
             function drawRotatedImage(image, x, y, angle, flip) {
                 ctx.save()
                 ctx.translate(x + image.naturalWidth / 2, y + image.naturalHeight / 2);
-                 if (flip) {
-                     ctx.rotate(angle -(2*ninety));
-                     ctx.scale(-1, 1);
-                 } else {
+                if (flip) {
+                    ctx.rotate(angle - (2 * ninety));
+                    ctx.scale(-1, 1);
+                } else {
                     ctx.rotate(angle);
-                 }
+                }
 
                 ctx.translate(-(x + image.naturalWidth / 2), -(y + image.naturalHeight / 2));
                 ctx.drawImage(image, x, y);
@@ -273,29 +375,44 @@
             drawRotatedImage(img3, 1080, 1080, ninety * rot[3], flip[3]);
             ctx.restore();
 
-            var dlImage = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");  // here is the most important part because if you dont replace you will get a DOM 18 exception.
-            window.location.href=dlImage;
+            const dlImage = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");  // here is the most important part because if you dont replace you will get a DOM 18 exception.
+            const fileName = "image.png";
+
+            saveData()(dlImage, fileName);
         }
     </script>
 </head>
 
 <body>
-    <div class="floating">
-        <div class="label2">
-            <button onclick="superRotate()">Super Rotate</button>
-            <button onclick="solve()">Solve Map</button>
-            <button onclick="download()">Download</button>
-            <div id="superLabel">Master Rotate: 0deg (As given, 1,2 3,4 from the twitter Bio's)</div>
-        </div>
-    </div>
     <div class="grid-container">
-        <div class="toolbar"></div>
-        <div class="spacer"></div>
+        <div class="toolbar">
+            <div class="label2">
+                <button onclick="superRotate()">Super Rotate</button>
+                <button onclick="solve()">Solve Map</button>
+                <button onclick="download()">Download</button>
+                <div style="float: right;">
+                    <pre class="encoded" id="linesDebug" style="margin: 0;"></pre>
+                </div>
+                <div id="superLabel">Master Rotate: 0deg (As given, 1,2 3,4 from the twitter Bio's)</div>
+            </div>
+        </div>
+        <div class="spacer">
+            <div>
+                <div><span id="line1lbl">Square 1: </span><span id="line1pp" class="encoded"></span></div>
+                <div><span id="line2lbl">Square 2: </span><span id="line2pp" class="encoded"></span></div>
+                <div><span id="line3lbl">Square 3: </span><span id="line3pp" class="encoded"></span></div>
+                <div><span id="line4lbl">Square 4: </span><span id="line4pp" class="encoded"></span></div>
+            </div>
+        </div>
         <div id="superRot">
-            <div class="gridchilda"><img id="img0" class="4" onclick="imgWindow(0, this)" src="1.jpg" crossOrigin="anonymous"/></div>
-            <div class="gridchildb"><img id="img1" class="3" onclick="imgWindow(1, this)" src="2.jpg" crossOrigin="anonymous"/></div>
-            <div class="gridchildc"><img id="img2" class="2" onclick="imgWindow(2, this)" src="3.jpg" crossOrigin="anonymous"/></div>
-            <div class="gridchildd"><img id="img3" class="1" onclick="imgWindow(3, this)" src="4.jpg" crossOrigin="anonymous"/></div>
+            <div class="gridchilda"><img id="img0" class="4" onclick="imgWindow(0, this)"
+                    oncontextmenu="imgWindow(0, this, true)" src="1.jpg" crossOrigin="anonymous" /></div>
+            <div class="gridchildb"><img id="img1" class="3" onclick="imgWindow(1, this)"
+                    oncontextmenu="imgWindow(1, this, true)" src="2.jpg" crossOrigin="anonymous" /></div>
+            <div class="gridchildc"><img id="img2" class="2" onclick="imgWindow(2, this)"
+                    oncontextmenu="imgWindow(2, this, true)" src="3.jpg" crossOrigin="anonymous" /></div>
+            <div class="gridchildd"><img id="img3" class="1" onclick="imgWindow(3, this)"
+                    oncontextmenu="imgWindow(3, this, true)" src="4.jpg" crossOrigin="anonymous" /></div>
         </div>
         <div id="labelstack">
             <div id="labelA" class="gridchilda">
@@ -314,6 +431,7 @@
         <div class="spacer2"></div>
         <div class="footer"><span>Trans rights are human rights.</span></div>
     </div>
+    <script>update(0); update(1); update(2); update(3); superUpdate();</script>
 </body>
 
 </html>
