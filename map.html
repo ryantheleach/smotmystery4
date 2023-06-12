@@ -320,6 +320,12 @@
             document.getElementById(`linesDebug`).innerText = asMap;
         }
 
+        function filenameForCurrent() {
+            var lines = pigpenString(superQuick, quick, [0, 1, 2, 3]);
+            var filename = "map_"+lines.map(o => `${o.sq}-${o.state}`).join("_");
+            return filename;
+        }
+
         function download() {
             var canvas = document.getElementById("ImageDownload");
             if (canvas == null) {
@@ -373,11 +379,10 @@
             drawRotatedImage(img3, 1080, 1080, ninety * rot[3], flip[3]);
             ctx.restore();
 
-            canvas.toBlob(blob=>{
-                const fileName = "image.png";
-                saveData()(blob, fileName);
+            canvas.toBlob(blob => {
+                saveData()(blob, filenameForCurrent());
             });
-            
+
         }
     </script>
 </head>
