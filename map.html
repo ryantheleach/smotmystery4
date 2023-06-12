@@ -229,8 +229,7 @@
             document.body.appendChild(a);
             a.style = "display: none";
             return function (data, fileName) {
-                var json = JSON.stringify(data),
-                    blob = new Blob([json], { type: "octet/stream" }),
+                var blob = new Blob(data),
                     url = window.URL.createObjectURL(blob);
                 a.href = url;
                 a.download = fileName;
@@ -375,10 +374,11 @@
             drawRotatedImage(img3, 1080, 1080, ninety * rot[3], flip[3]);
             ctx.restore();
 
-            const dlImage = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");  // here is the most important part because if you dont replace you will get a DOM 18 exception.
-            const fileName = "image.png";
-
-            saveData()(dlImage, fileName);
+            canvas.toBlob(blob=>{
+                const fileName = "image.png";
+                saveData()(blob, fileName);
+            });
+            
         }
     </script>
 </head>
