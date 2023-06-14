@@ -1,0 +1,89 @@
+<html>
+
+<head>
+    <script>
+        const note1 = [
+            ["Never", "thought", "it", "would", "actually", "come", "to", "this"],
+            ["Why", "wont", "you", "listen", "to", "me"],
+            ["No", "one", "should", "ever", "ignore", "me"],
+            ["Even", "though", "you", "are", "all", "lovely", "pirate", "scoundrels"],
+            ["slothful", "Gold", "Hoarders", "refused", "to", "do", "this", "by", "themselves"],
+            ["Every", "time", "you", "keep"],
+            ["stubbornly", "coming", "back", "again", "and", "again"],
+            ["Eventually", "I", "WILL", "tire"],
+            ["Necessity", "will", "demand", "revenge", "so"],
+            ["WATCH", "OUT",],
+            ["Needless", "to", "say", "you", "will", "suffer", "greatly"],
+            ["Every", "fiendish", "puzzle"],
+            ["Niggling", "away", "at", "your", "tiny", "mind"],
+            ["Eventually", "destroying", "you"]];
+        const note2 = [
+            ["Nights", "have", "passed", "and", "still", "you", "all", "struggle"],
+            ["While", "you", "continue", "to", "flounder", "aimlessly"],
+            ["no", "one", "thinks", "to", "solve", "an"],
+            ["easy", "toddlers", "puzzle", "by", "just", "searching", "for", "a"],
+            ["simple", "word", "and", "what", "comes", "afore", "this", "word", "look"],
+            ["easy", "maybe", "now", "youll"],
+            ["solve", "the", "rest", "on", "your", "own"],
+            ["ending", "a", "journey", "is"],
+            ["never", "easy", "and", "completing", "this"],
+            ["will", "require"],
+            ["noticing", "the", "connection", "between", "symbols", "map", "and"],
+            ["everything", "on", "this"],
+            ["note", "only", "then", "will", "you", "finally"],
+            ["end", "our", "suffering"],
+        ];
+        function writeTag(tag, str) {
+            let pre = document.createElement(tag);
+            let text = document.createTextNode(str);
+            pre.appendChild(text);
+            document.body.appendChild(pre);
+        }
+
+        function zip2d(arr1, arr2) {
+            return arr1.map((r, ri) =>
+                r.map((c, ci) => [c, arr2[ri][ci]])
+            );
+        }
+
+    </script>
+</head>
+
+<body>
+
+
+    <script>
+        function createTable(array, cellMapFn) {
+            let table = document.createElement("table");
+
+            array.forEach(l => {
+                let row = document.createElement("tr");
+
+                l.forEach(w => {
+                    let cell = document.createElement("td");
+                    cell.appendChild(cellMapFn(w));
+                    row.appendChild(cell);
+                });
+                table.appendChild(row);
+            })
+            return table;
+        }
+
+        noteCombined = zip2d(note1, note2);
+
+        var table = createTable(noteCombined,
+                        x => createTable(
+                            x.map(s => s.split("")),
+                            s=> document.createTextNode(s)
+            )
+        );
+        document.body.appendChild(table);
+        document.body.appendChild(document.createElement("br"));
+        document.body.appendChild(table);
+
+
+
+    </script>
+</body>
+
+</html>
