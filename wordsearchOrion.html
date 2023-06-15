@@ -1,0 +1,185 @@
+<html>
+
+<head>
+    <script src="wordsearchOrion.js"></script>
+    <script>
+
+        function getAnchor() {
+            var currentUrl = document.URL,
+                urlParts = currentUrl.split('#');
+
+            return (urlParts.length > 1) ? urlParts[1] : null;
+        }
+
+        var width = 17;
+        var height = 17.3;
+        var startx = 105;
+        var starty = 102;
+        function clear() {
+            var can = document.getElementById('canvas');
+            var ctx = can.getContext('2d');
+            ctx.clearRect(0, 0, can.width, can.height);
+        }
+
+        function debug() {
+            clear();
+            for (c = 0; c < 3; c++) { for (r = 0; r < 3; r++) { drawShape(String.fromCodePoint("a".charCodeAt(0) + r * 3 + c), r * 4, c * 4) } }
+            drawShape("s", 11, 0); drawShape("t", 11, 5); drawShape("u", 11, 8); drawShape("v", 11, 12);
+        }
+
+        //{"word":"ANGER", "rc":{"X":8, "Y":2}, "path": [[-1,-1], [1,0], [1,-1], [0,-1]]}, 
+        var byWords = {};
+        orionWords.forEach(o => {
+            if (byWords[o.word] == undefined) byWords[o.word] = [];
+            byWords[o.word].push(o);
+        });
+
+        addEventListener("hashchange", load);
+
+        function load() {
+            clear();
+            if (getAnchor() === null) {
+                window.location.hash = "#s_0_9,h_1_5,t_1_1,d_6_6,f_8_0,d_8_15,c_12_7,f_12_15,f_15_3,i_15_11";
+                return;
+            }
+            if (getAnchor() === "") {
+                document.getElementById("selected").innerHTML = "";
+                return;
+            }
+            var multiselect = getAnchor().split(",");
+            var multiselect = multiselect.map(m => m.split("_"));
+            multiselect.forEach(m => {
+                var entry = byWords[m[0]][Number(m[1])];
+                drawShape2(entry.path, entry.rc.X, entry.rc.Y);
+            });
+            var asText = multiselect.map(m => m[0] + " " + m[1]);
+            var html = `${asText.join("</br>")}`;
+            document.getElementById("selected").innerHTML = html;
+        }
+
+        function drawShape2(shape, x, y) {
+            var can = document.getElementById('canvas');
+            var ctx = can.getContext('2d');
+
+
+
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = 'red';
+            ctx.beginPath();
+            
+            var [ri, ci] = [y, x];
+            ctx.moveTo(startx + ((ci) * width), starty + (ri * height));
+            shape.forEach(rc => {
+                [ri, ci] = [rc[0]+ri, rc[1]+ci];
+                    ctx.lineTo(startx + ((ci) * width), starty + ((ri) * height));
+            });
+            ctx.stroke();
+        }
+
+
+        function drawShape(letter, r, c) {
+            var shape = pigPen[letter];
+
+            var can = document.getElementById('canvas');
+            var ctx = can.getContext('2d');
+
+
+
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = 'red';
+            ctx.beginPath();
+            var first = true;
+            shape.forEach(rc => {
+                if (first) {
+                    ctx.moveTo(startx + ((rc[1] + c) * width), starty + ((rc[0] + r) * height));
+                    first = false;
+                } else {
+                    ctx.lineTo(startx + ((rc[1] + c) * width), starty + ((rc[0] + r) * height));
+                }
+            });
+            ctx.stroke();
+        }
+
+        function preview() {
+            var resultsE = document.getElementById("results");
+
+            for ([k, v] of Object.entries(byWords)) {
+                var html = `<h1>${k}</h1>`;
+                resultsE.insertAdjacentHTML("beforeend", html);
+                v.forEach((item, index) => {
+                    var text = `${k.trim()}(${index}) - [${item.rc.X} ${item.rc.Y}]`;
+                    var id = `${k.trim()}_${index}`
+                    var html = `<a id="${id}" href="#${id}">${text}</a>`;
+                    resultsE.insertAdjacentHTML("beforeend", html);
+                });
+            }
+        }
+
+    </script>
+    <style>
+        .column {
+            display: flex;
+            flex-direction: column;
+            flex-basis: 100%;
+            flex: 1;
+        }
+
+        .row {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .row a {
+            width: 100%;
+        }
+
+        #canvas {
+            background-image: url("FxipobnaAAEt05N.jfif");
+            background-position: center;
+            background-size: 100% 100%;
+        }
+
+        #selected {
+            height: 20dvh;
+        }
+
+        #results {
+            overflow-y: scroll;
+            height: 76dvh;
+        }
+
+        #toolbar {
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="row">
+        <div class="column">
+            <div>
+                <image src="FxipobpagAImlez.jfif" height="500" width="500"></image>
+            </div>
+            <div>
+                <canvas id="canvas" width="500" height="500"></canvas>
+            </div>
+        </div>
+        <div class="column row">
+            <div id="toolbar"><a href="#">Clear</a> <a
+                    href="#s_0_9,h_1_5,t_1_1,d_6_6,f_8_0,d_8_15,c_12_7,f_12_15,f_15_3,i_15_11">AFORECLOUD?</a></div>
+            <div id="selected">
+            </div>
+            <div class="row list" id="results">
+            </div>
+        </div>
+        <div class="column">
+            <div><textarea id="preview" rows="60" cols="150"></textarea></div>
+        </div>
+    </div>
+    <script>preview()</script>
+    <script>load()</script>
+</body>
+
+</html>
