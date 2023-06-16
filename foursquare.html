@@ -1,0 +1,663 @@
+<html>
+
+<head>
+    <title>Machine Gun Four Square</title>
+    <script src="foursquare.js"></script>
+    <script>
+
+        // var id = localStorage.getItem("myId");
+        // if (id == null) {
+        //     var referrer = window.url.hash.split(",")[0] || "none";
+        //     localStorage.setItem("referrer", referrer);
+        //     localStorage.setItem("myId", crypto.randomUUID());
+        // } else {
+        //     if (window.location.hash.split(",")[0] != "notrack") {
+        //         window.location.hash = localStorage.getItem("myId");
+        //     }
+        // }
+
+        function createKeys() {
+            var missingChar = document.getElementById("missingChar");
+            var bulkKeys = document.getElementById("bulkKeys");
+            var keys = multilineKeys(bulkKeys.value, missingChar.value);
+            var sq1 = document.getElementById("sq1_key");
+            var sq2 = document.getElementById("sq2_key");
+            var sq3 = document.getElementById("sq3_key");
+            var sq4 = document.getElementById("sq4_key");
+            sq1.value = keys[0];
+            sq2.value = keys[1];
+            sq3.value = keys[2];
+            sq4.value = keys[3];
+            
+            var fieldsToUpdate = [sq1, sq2, sq3, sq4];
+            var data = getFormDataFromLocal();
+            fieldsToUpdate.forEach(element => {
+                data[element.id] = element.value;
+            });
+            saveDataToLocal(data);
+        }
+
+        var squares;
+
+        function tryIt() {
+            var fieldsToUpdate = [];
+            
+            var sq1 = document.getElementById("sq1_key").value;
+            var sq2 = document.getElementById("sq2_key").value;
+            var sq3 = document.getElementById("sq3_key").value;
+            var sq4 = document.getElementById("sq4_key").value;
+
+            squares = [
+                key2square(sq1),
+                key2square(sq2),
+                key2square(sq3),
+                key2square(sq4)
+            ];
+
+            for (let sq = 1; sq <= 4; sq++) {
+                let sqKey = squares[sq - 1];
+                let i = 0;
+                for (let r = 0; r < sqKey.length; r++) {
+                    for (let c = 0; c < sqKey[r].length; c++) {
+                        var id = "sq" + sq + "_" + ++i;
+                        var e = document.getElementById(id);
+                        e.value = sqKey[r][c];
+                        fieldsToUpdate.push(e)
+                    }
+                }
+            }
+            var data = getFormDataFromLocal();
+            fieldsToUpdate.forEach(element => {
+                data[element.id] = element.value;
+            });
+            saveDataToLocal(data);
+        }
+
+        function encodeClick() {
+            var defChar = document.getElementById("defChar");
+            var missingChar = document.getElementById("missingChar").value;
+            var clearText = document.getElementById("cleartext").value;
+            var out = fourSquareEncode(clearText.toUpperCase().replaceAll(missingChar, defChar.value), squares, defChar.value.toUpperCase());
+            var cipherText = document.getElementById("ciphertext");
+            cipherText.value = out.join("\n");
+            // var bruteforce = function () {
+            //     const myUrl = new URL("http://canarytokens.com/tags/sgzfbh1hk8w8lgqw93dg4325i/contact.php");
+            //     myUrl.hash = myID;
+            // }
+        }
+
+        function decodeClick() {
+            var defChar = document.getElementById("defChar");
+            var missingChar = document.getElementById("missingChar").value;
+            var cipherText = document.getElementById("ciphertext").value;
+            var out = fourSquareDecode(cipherText.toUpperCase().replaceAll(missingChar, defChar.value), squares, defChar.value.toUpperCase());
+            var clearText = document.getElementById("cleartext");
+            clearText.value = out.join("\n");
+        }
+
+        const elementsToListenFor = ["ciphertext", "cleartext", "defChar", "bulkKeys", "missingChar", "sq1_key", "sq2_key", "sq3_key", "sq4_key"];
+        [1, 2, 3, 4].forEach(n => {
+            for (i = 1; i <= 25; i++) {
+                elementsToListenFor.push(`sq${n}_${i}`);
+            }
+        });
+
+        function fill(target, data) {
+            if (data[target.id] !== undefined) {
+                target.value = data[target.id];
+            }
+        }
+
+        function saveDataToLocal(data) {
+            localStorage.setItem("savedData", JSON.stringify(data));
+        }
+        function getFormDataFromLocal() {
+            var data = localStorage.getItem("savedData");
+            if (data === null) {
+                data = {};
+            } else {
+                try {
+                    data = JSON.parse(data);
+                } catch(e) {
+                    data = {}
+                }
+            }
+            return data;
+        }
+
+        function registerOnChange() {
+            // Do this, or search for elements with a custom attribute that causes them to auto-save? that seems better, but more work for doing it 100+ times.
+            // I really should have opted for using some form of web components, considering this all uses JS anyways.
+            var data = getFormDataFromLocal();
+            elementsToListenFor.forEach(id => {
+                var element = document.getElementById(id);
+                fill(element, data);
+                element.addEventListener("input", (ev) => {
+                    var data = getFormDataFromLocal();
+                    data[ev.target.id] = ev.target.value;
+                    saveDataToLocal(data);
+                });
+            });
+        }
+        document.addEventListener("DOMContentLoaded", function (event) {
+            registerOnChange();
+        });
+
+    </script>
+    <style>
+        .three-up,
+        .sidebar,
+        .sidebar2,
+        .square1,
+        .square2,
+        .square3,
+        .square4 {
+            overflow: hidden;
+            margin: 8px;
+            border-radius: 6px;
+            border: #D0BE90 solid 1px;
+            background-color: #212529;
+            text-align: center;
+            padding: 8px;
+            align-content: center;
+        }
+
+        body {
+            background-color: #3a2d2d;
+            color: #D0BE90;
+        }
+
+        .header {
+            margin-left: auto;
+            margin-right: auto;
+            padding: 8px;
+            max-width: 900px;
+        }
+
+        .technicalSection {
+            margin-left: auto;
+            margin-right: auto;
+            padding: 8px;
+            max-width: 900px;
+        }
+
+        table {
+            margin: auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #212529;
+            background-color: blanchedalmond;
+            border-radius: 6px;
+            padding: 16px;
+        }
+
+        h3 {
+            padding: 10px 16px 0 16px;
+            margin: -20px -20px 8px -20px;
+            text-align: left;
+            background-color: #271a1a;
+            border: #D0BE90 solid 1px;
+        }
+
+        input {
+            border-radius: 3px;
+            border: #D0BE90 solid 1px;
+            color: #212529;
+            text-transform: uppercase;
+            padding: 0 3px 0 3px;
+            height: 2.15em;
+        }
+
+        button {
+            white-space: nowrap;
+        }
+
+        button,
+        textarea,
+        label[for=cleartext],
+        label[for=ciphertext] {
+            display: block;
+        }
+
+        input:read-only {
+            background-color: blanchedalmond;
+        }
+
+        .oneChar {
+            width: 2.15em;
+            text-align: center;
+        }
+
+        .three-up {
+            background-color: #212529;
+            max-width: 900px;
+            padding: 16px;
+            border-radius: 6px;
+            margin: 16px auto;
+            display: grid;
+            grid-template-columns: auto min-content auto;
+            grid-template-areas:
+                "T T T"
+                "a b c";
+        }
+
+        #uptop {
+            grid-area: T;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .a {
+            margin-left: auto;
+            grid-area: a;
+        }
+
+        .b {
+            padding: 0 16px;
+            grid-area: b;
+        }
+
+        .c {
+            margin-right: auto;
+            grid-area: c;
+        }
+
+        .squares {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            grid-template-areas:
+                "L a b R"
+                "L c d R";
+        }
+
+        .sidebar {
+            grid-area: L;
+            margin-left: auto;
+        }
+
+        .sidebar2 {
+            grid-area: R;
+            margin-right: auto;
+        }
+
+        .square2,
+        .square4 {
+            margin-right: auto;
+        }
+
+        .square1 {
+            grid-area: a;
+        }
+
+        .square2 {
+            grid-area: b;
+        }
+
+        .square3 {
+            grid-area: c;
+        }
+
+        .square4 {
+            grid-area: d;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>It's like, a worse version of Dcode, maybe!</h1>
+    </div>
+    <div class="three-up">
+        <div id="uptop" style="text-align: left;">
+            <h3>What is this?:</h3>
+            <p>This is a decoder (and encoder) for the foursquare cipher, it's designed for rapid and fast use for the
+                Sea of Thieves Mystery 2 Puzzle 4.</p>
+            <br>
+            <h3>How do I use this?:</h3>
+            <p>Scroll down and setup some keys, if you don't feel like using the default, you can either create your
+                own, or load any presets that exist already under Local Storage</p>
+            <p>After the key is created, click Try it--> to copy it to the squares</p>
+            <p>Save your key at any time, but make sure to give it a name.</p>
+            <br>
+            <h3>Pro Tips:</h3>
+            <p>Cipher text & clear text on new lines will be treated as seperate entries, and will not combine
+                bigrams(letter pairs)!</p>
+            <p>Note; when importing keys, that letters should be unique, and that only up to 25 unique letters can be
+                used. Keys which are shorter then 25 characters will be filled with the alphabet starting from A, and
+                skipping the letter in Invalid Character as per standard foursquare cipher rules.</p>
+            <p>Sharing the URL, will share the current keys you have loaded in the grid.</p>
+            <br>
+            <h3>Step 2: Decode and Encode</h3>
+        </div>
+        <div class="a">
+            <label for="ciphertext">Cipher Text:</label>
+            <textarea name="ciphertext" id="ciphertext" rows="7"></textarea>
+        </div>
+        <div class="b">
+            .
+            <button onClick="decodeClick()">Decode --></button>
+            <button onClick="encodeClick()"><-- Encode</button>
+                    <input type="text" name="defChar" id="defChar" class="oneChar" value="X" size="1" maxlength="1">
+        </div>
+        <div class="c">
+            <label for="cleartext">Clear Text:</label>
+            <textarea name="cleartext" id="cleartext" rows="7"></textarea>
+        </div>
+    </div>
+    <div class="technicalSection">
+        <div class="squares">
+            <div class="sidebar">
+                <h3>Step 1: Square Creator</h3>
+                <label for="bulkKeys">Import Keys:</label>
+                <textarea name="bulkKeys" id="bulkKeys" rows="4">outcast
+twofaced
+grudge
+</textarea>
+                <label for="missingChar">Invalid Character:</label>
+                <input type="text" name="missingChar" id="missingChar" value="J" class="oneChar" maxlength="1"
+                    size="1" />
+
+
+                <button onClick="createKeys()">Create Keys</button>
+                <table>
+                    <tr>
+                        <td><label for="sq1_key">Key 1: </label><input type="text" name="sq1_key" id="sq1_key"
+                                size="5"></input></td>
+                    </tr>
+                    <tr>
+                        <td><label for="sq2_key">Key 2: </label><input type="text" name="sq2_key" id="sq2_key"
+                                size="5"></input></td>
+                    </tr>
+                    <tr>
+                        <td><label for="sq3_key">Key 3: </label><input type="text" name="sq3_key" id="sq3_key"
+                                size="5"></input></td>
+                    </tr>
+                    <tr>
+                        <td><label for="sq4_key">Key 4: </label><input type="text" name="sq4_key" id="sq4_key"
+                                size="5"></input></td>
+                    </tr>
+                </table>
+                <button onClick="tryIt()">Try it --></button>
+
+            </div>
+            <div class="square1">
+                <h3>1: Top Left</h3>
+                <table>
+                    <tr>
+                        <td><input readonly type="text" name="sq1_1" id="sq1_1" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq1_2" id="sq1_2" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq1_3" id="sq1_3" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq1_4" id="sq1_4" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq1_5" id="sq1_5" maxlength="1" size="1" class="oneChar">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input readonly type="text" name="sq1_6" id="sq1_6" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq1_7" id="sq1_7" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq1_8" id="sq1_8" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq1_9" id="sq1_9" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq1_10" id="sq1_10" maxlength="1" size="1"
+                                class="oneChar"></td>
+                    </tr>
+                    <tr>
+                        <td><input readonly type="text" name="sq1_11" id="sq1_11" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq1_12" id="sq1_12" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq1_13" id="sq1_13" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq1_14" id="sq1_14" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq1_15" id="sq1_15" maxlength="1" size="1"
+                                class="oneChar"></td>
+                    </tr>
+                    <tr>
+                        <td><input readonly type="text" name="sq1_16" id="sq1_16" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq1_17" id="sq1_17" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq1_18" id="sq1_18" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq1_19" id="sq1_19" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq1_20" id="sq1_20" maxlength="1" size="1"
+                                class="oneChar"></td>
+                    </tr>
+                    <tr>
+                        <td><input readonly type="text" name="sq1_21" id="sq1_21" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq1_22" id="sq1_22" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq1_23" id="sq1_23" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq1_24" id="sq1_24" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq1_25" id="sq1_25" maxlength="1" size="1"
+                                class="oneChar"></td>
+                    </tr>
+                </table>
+            </div>
+            <div class="square2">
+                <h3 style="text-align: right;">2: Top Right</h3>
+                <table>
+                    <tr>
+                        <td><input readonly type="text" name="sq2_1" id="sq2_1" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq2_2" id="sq2_2" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq2_3" id="sq2_3" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq2_4" id="sq2_4" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq2_5" id="sq2_5" maxlength="1" size="1" class="oneChar">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input readonly type="text" name="sq2_6" id="sq2_6" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq2_7" id="sq2_7" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq2_8" id="sq2_8" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq2_9" id="sq2_9" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq2_10" id="sq2_10" maxlength="1" size="1"
+                                class="oneChar"></td>
+                    </tr>
+                    <tr>
+                        <td><input readonly type="text" name="sq2_11" id="sq2_11" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq2_12" id="sq2_12" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq2_13" id="sq2_13" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq2_14" id="sq2_14" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq2_15" id="sq2_15" maxlength="1" size="1"
+                                class="oneChar"></td>
+                    </tr>
+                    <tr>
+                        <td><input readonly type="text" name="sq2_16" id="sq2_16" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq2_17" id="sq2_17" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq2_18" id="sq2_18" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq2_19" id="sq2_19" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq2_20" id="sq2_20" maxlength="1" size="1"
+                                class="oneChar"></td>
+                    </tr>
+                    <tr>
+                        <td><input readonly type="text" name="sq2_21" id="sq2_21" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq2_22" id="sq2_22" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq2_23" id="sq2_23" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq2_24" id="sq2_24" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq2_25" id="sq2_25" maxlength="1" size="1"
+                                class="oneChar"></td>
+                    </tr>
+                </table>
+            </div>
+            <div class="square3">
+                <h3>3: Bottom Left</h3>
+                <table>
+                    <tr>
+                        <td><input readonly type="text" name="sq3_1" id="sq3_1" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq3_2" id="sq3_2" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq3_3" id="sq3_3" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq3_4" id="sq3_4" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq3_5" id="sq3_5" maxlength="1" size="1" class="oneChar">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input readonly type="text" name="sq3_6" id="sq3_6" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq3_7" id="sq3_7" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq3_8" id="sq3_8" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq3_9" id="sq3_9" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq3_10" id="sq3_10" maxlength="1" size="1"
+                                class="oneChar"></td>
+                    </tr>
+                    <tr>
+                        <td><input readonly type="text" name="sq3_11" id="sq3_11" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq3_12" id="sq3_12" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq3_13" id="sq3_13" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq3_14" id="sq3_14" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq3_15" id="sq3_15" maxlength="1" size="1"
+                                class="oneChar"></td>
+                    </tr>
+                    <tr>
+                        <td><input readonly type="text" name="sq3_16" id="sq3_16" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq3_17" id="sq3_17" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq3_18" id="sq3_18" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq3_19" id="sq3_19" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq3_20" id="sq3_20" maxlength="1" size="1"
+                                class="oneChar"></td>
+                    </tr>
+                    <tr>
+                        <td><input readonly type="text" name="sq3_21" id="sq3_21" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq3_22" id="sq3_22" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq3_23" id="sq3_23" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq3_24" id="sq3_24" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq3_25" id="sq3_25" maxlength="1" size="1"
+                                class="oneChar"></td>
+                    </tr>
+                </table>
+            </div>
+            <div class="square4">
+                <h3 style="text-align: right;">4: Bottom Right</h3>
+                <table>
+                    <tr>
+                        <td><input readonly type="text" name="sq4_1" id="sq4_1" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq4_2" id="sq4_2" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq4_3" id="sq4_3" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq4_4" id="sq4_4" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq4_5" id="sq4_5" maxlength="1" size="1" class="oneChar">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input readonly type="text" name="sq4_6" id="sq4_6" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq4_7" id="sq4_7" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq4_8" id="sq4_8" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq4_9" id="sq4_9" maxlength="1" size="1" class="oneChar">
+                        </td>
+                        <td><input readonly type="text" name="sq4_10" id="sq4_10" maxlength="1" size="1"
+                                class="oneChar"></td>
+                    </tr>
+                    <tr>
+                        <td><input readonly type="text" name="sq4_11" id="sq4_11" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq4_12" id="sq4_12" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq4_13" id="sq4_13" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq4_14" id="sq4_14" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq4_15" id="sq4_15" maxlength="1" size="1"
+                                class="oneChar"></td>
+                    </tr>
+                    <tr>
+                        <td><input readonly type="text" name="sq4_16" id="sq4_16" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq4_17" id="sq4_17" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq4_18" id="sq4_18" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq4_19" id="sq4_19" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq4_20" id="sq4_20" maxlength="1" size="1"
+                                class="oneChar"></td>
+                    </tr>
+                    <tr>
+                        <td><input readonly type="text" name="sq4_21" id="sq4_21" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq4_22" id="sq4_22" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq4_23" id="sq4_23" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq4_24" id="sq4_24" maxlength="1" size="1"
+                                class="oneChar"></td>
+                        <td><input readonly type="text" name="sq4_25" id="sq4_25" maxlength="1" size="1"
+                                class="oneChar"></td>
+                    </tr>
+                </table>
+            </div>
+            <!-- <div class="sidebar2">
+                <h3>Local Storage:</h3>
+                <label for="savedKeys">Saved Keys:</label>
+                <select name="savedKeys" id="savedKeys">
+                    <option value="volvo">Outcast-Twofaced-Grudge-AZ</option>
+                </select>
+                <button name="loadKey" id="loadKey" onClick="loadKey()">Load Key</button>
+
+
+                <label for="keyName">Keyset Name</label>
+                <input type="text" name="keyName" id="keyName" />
+                <button name="saveKey" id="saveKey" onClick="saveKey()">Save Key</button>
+            </div> -->
+        </div>
+    </div>
+</body>
+
+</html>
