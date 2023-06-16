@@ -39,6 +39,10 @@
 
         var squares;
 
+        function init() {
+            tryIt();
+        }
+
         function tryIt() {
             var fieldsToUpdate = [];
             
@@ -129,6 +133,7 @@
             // Do this, or search for elements with a custom attribute that causes them to auto-save? that seems better, but more work for doing it 100+ times.
             // I really should have opted for using some form of web components, considering this all uses JS anyways.
             var data = getFormDataFromLocal();
+           
             elementsToListenFor.forEach(id => {
                 var element = document.getElementById(id);
                 fill(element, data);
@@ -141,6 +146,7 @@
         }
         document.addEventListener("DOMContentLoaded", function (event) {
             registerOnChange();
+            init();
         });
 
     </script>
